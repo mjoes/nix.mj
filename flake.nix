@@ -18,26 +18,44 @@
       inherit system;
       specialArgs = inputs;
       modules = [
-        home-manager.nixosModules.home-manager
         ./hardware/configuration.nix
+        home-manager.nixosModules.home-manager
         {
           programs.starship.enable = true;
-          users.users.mj.isNormalUser = true;
+          users.mutableUsers = false;
+          users.users.mj = {
+            isNormalUser = true;
+            extraGroups = [ "wheel" ];
+          };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.mj = {
             home.stateVersion = "24.11";
-            programs.fzf.enable = true;
+            home.username = "mj";
+              # home.homeDirectory = pkgs.lib.mkForce "/home/mortenslingsby/repos/nix.mj";
+            programs = {
+              home-manager.enable = true;
+              bash.enable = true;
+              fzf.enable = true;
+              gh.enable = true;
+              git = {
+                enable = true;
+                userName = "mjoes";
+                userEmail = "morten.slingsby@gmail.com";
+              };
+            };
           };
         }
         {
+          nix.gc = {
+            automatic = true;
+            dates = "weekly";
+          };
           nix.extraOptions = ''
             experimental-features = nix-command flakes
           '';
           environment.systemPackages = with pkgs; [
             neovim
-            gh
-            git
             ruff
             lazygit
             go
